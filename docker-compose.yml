@@ -1,0 +1,38 @@
+# Chocolate Factory — frontend
+#
+# Runs next to the backend (chocolate-backend, project name "chocolate"):
+# - own project name "chocolate-web" — does not touch javon, annur, saxovat or the backend;
+# - joins the backend network chocolate_default to reach the "api" container;
+# - port only on 127.0.0.1 and on a free number (8030);
+# - small memory limit and limited logs.
+#
+# Start the backend first (it creates the chocolate_default network):
+#   cd ../chocolate-backend && docker compose up -d
+# Then:
+#   docker compose up -d --build
+
+name: chocolate-web
+
+services:
+  web:
+    build: .
+    image: chocolate-web:local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${WEB_HOST_PORT:-8030}:80"
+    networks:
+      - chocolate
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  chocolate:
+    external: true
+    name: chocolate_default
