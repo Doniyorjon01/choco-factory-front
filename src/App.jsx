@@ -139,7 +139,7 @@ h3 { font-size: 15px; font-weight: 600; letter-spacing: 0; }
 .card-head a { font-size: 14px; font-weight: 600; }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 20px; align-items: start; }
 .grid-side { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(min(340px, 100%), 1fr); gap: 20px; align-items: start; }
-@media (max-width: 1100px) { .grid-side { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .grid-side { grid-template-columns: minmax(0, 1fr); } }
 .stack { display: flex; flex-direction: column; gap: 16px; }
 .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
@@ -387,7 +387,7 @@ details.tv summary { cursor: pointer; font-size: 13px; font-weight: 600; color: 
 
 /* Recipes */
 .rc-layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px; align-items: start; }
-@media (max-width: 1000px) { .rc-layout { grid-template-columns: 1fr; } }
+@media (max-width: 1000px) { .rc-layout { grid-template-columns: minmax(0, 1fr); } }
 .rc-nav { display: flex; flex-direction: column; gap: 6px; }
 .rc-nav button { display: flex; align-items: center; gap: 12px; text-align: left; min-height: 60px; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); }
 .rc-nav button[aria-current="true"] { border: 2px solid var(--cocoa); background: #FBF5EE; }
@@ -420,6 +420,46 @@ details.tv summary { cursor: pointer; font-size: 13px; font-weight: 600; color: 
 .err-page { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; min-height: 60vh; }
 .err-page .code { font-family: var(--f-mono); font-size: 72px; font-weight: 600; color: var(--cocoa2); letter-spacing: -0.04em; line-height: 1; }
 .err-page p { max-width: 460px; color: var(--ink2); margin: 0; }
+
+/* ---------- Phone layout ----------
+   Tables become small cards: header row is hidden, every row is a 2-column grid.
+   Classes used in App.jsx:
+   m-full = cell takes the whole row, m-hide = hidden on phone, m-o1..m-o7 = order,
+   m-sub = small grey text, m-lbl = shows its data-label before the value, m-only = shown only on phone. */
+.m-only { display: none; }
+@media (max-width: 720px) {
+  .app { overflow-x: clip; }
+  /* 16px text in fields: iPhone does not zoom in when a field is tapped */
+  .input, select.input, textarea.input, .search input, .qty-box .input { font-size: 16px; }
+  .qty-box .input { font-size: 26px; }
+  .card { padding: 16px; border-radius: 16px; }
+  .main { gap: 16px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .kpi { padding: 14px; border-radius: 14px; }
+  .kpi .k-v { font-size: 24px; }
+  .page-head .actions { width: 100%; }
+  .page-head .actions > .btn, .page-head .actions > a.btn { flex: 1 1 auto; }
+  .seg:not(.sm) { display: flex; width: 100%; }
+  .seg:not(.sm) button { flex: 1 1 0; padding: 0 8px; font-size: 13px; }
+  .auth-form .seg:not(.sm) { width: auto; }
+  .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .filters-grid .f-wide { grid-column: 1 / -1; }
+
+  .scroll-x { overflow-x: visible; }
+  .scroll-x > .tbl, .tbl { min-width: 0 !important; }
+  .tbl .th, .rl.th { display: none; }
+  .tbl .tr, .rl, .hist-row { grid-template-columns: minmax(0, 1fr) auto !important; grid-auto-flow: row dense; gap: 6px 12px !important; padding: 12px 0; min-height: 0; }
+  .tbl .tr > *, .rl > *, .hist-row > * { min-width: 0; }
+  .m-full { grid-column: 1 / -1; }
+  .m-hide { display: none !important; }
+  .m-only { display: block; }
+  .m-o1 { order: 1; } .m-o2 { order: 2; } .m-o3 { order: 3; } .m-o4 { order: 4; } .m-o5 { order: 5; } .m-o6 { order: 6; } .m-o7 { order: 7; }
+  .m-sub { font-size: 12px !important; color: var(--muted); }
+  .m-lbl::before { content: attr(data-label) ': '; color: var(--muted); font-family: var(--f-body); font-weight: 400; }
+  .m-right { text-align: right; justify-self: end; }
+  .exp-moves { margin-left: 0 !important; }
+  .doc-row { padding: 12px 4px; }
+}
 `;
 
 /* ---------- 2. Texts in two languages ---------- */
@@ -820,7 +860,7 @@ const S = {
   meta: null,    // reason codes from /documents/meta (cached)
 };
 // App sets these so api() can react to an expired session / forced password change.
-const handlers = { onUnauthorized: () => {}, onPasswordChange: () => {} };
+const handlers = { onUnauthorized: () => { }, onPasswordChange: () => { } };
 
 /* ---------- 6. API client ---------- */
 
@@ -1325,7 +1365,7 @@ function menuFor(role, low) {
     return [['produce', 'factory'], ['stock', 'box', null, '', t('view')], ['ledger', 'docs', t('nav_mydocs')], ['scrap', 'scrap']];
   }
   return [['#', t('sProd')], ['dashboard', 'grid'], ['produce', 'factory'], ['#', t('sStock')], ['stock', 'box', null, badge], ['receipt', 'receipt'], ['adjust', 'adjust'], ['scrap', 'scrap'], ['ledger', 'ledger'],
-    ['#', t('sCat')], ['products', 'tag'], ['recipes', 'recipes'], ['#', t('sSys')], ['users', 'users']];
+  ['#', t('sCat')], ['products', 'tag'], ['recipes', 'recipes'], ['#', t('sSys')], ['users', 'users']];
 }
 
 function Shell({ nav, children }) {
@@ -1492,9 +1532,10 @@ function StockRowsMini({ items, head = true }) {
       {items.map((m) => (
         <div className="tr" style={cols} key={m.product_id}>
           <div className="name"><b>{pname(m)}</b><span>{m.code} · {t('min')} {fq(m.min_qty, m.unit)}</span></div>
-          <Meter qty={m.qty} min={m.min_qty} target={m.target_qty} level={m.level} />
-          <div className="right" title={fx(m.qty, m.unit)}><div className="mono" style={{ fontWeight: 600, fontSize: 14 }}>{fq(m.qty, m.unit)}</div><LowTag level={m.level} /></div>
-          <div className="right mono small" style={{ fontWeight: 600, color: m.days_left != null && m.days_left <= 3 ? 'var(--low)' : 'var(--ink)' }}>{m.days_left != null ? t('days', { n: m.days_left }) : '—'}</div>
+          <div className="m-full"><Meter qty={m.qty} min={m.min_qty} target={m.target_qty} level={m.level} /></div>
+          <div className="right" title={fx(m.qty, m.unit)}><div className="mono" style={{ fontWeight: 600, fontSize: 14 }}>{fq(m.qty, m.unit)}</div><LowTag level={m.level} />
+            {m.days_left != null && <span className="m-only xs muted">{t('days', { n: m.days_left })}</span>}</div>
+          <div className="right mono small m-hide" style={{ fontWeight: 600, color: m.days_left != null && m.days_left <= 3 ? 'var(--low)' : 'var(--ink)' }}>{m.days_left != null ? t('days', { n: m.days_left }) : '—'}</div>
         </div>
       ))}
     </div>
@@ -1547,8 +1588,8 @@ function Chart7d({ p7 }) {
         <div className="xax">{days.map((d) => <div key={d}><b style={d === today ? { color: 'var(--ink)' } : undefined}>{t('weekdays')[weekdayOf(d)]}</b>{fday(d).slice(0, 5)}</div>)}</div>
       </div>
       <details className="tv"><summary>{t('tableView')}</summary>
-        <table className="mini-tbl"><thead><tr><th>{t('colDay')}</th>{series.map((s) => <th className="n" key={s.product.id}>{pname(s.product)}</th>)}<th className="n">{t('total')}</th></tr></thead>
-          <tbody>{days.map((d, i) => <tr key={d}><td>{fday(d)}</td>{series.map((s) => <td className="n" key={s.product.id}>{s.values[i] || 0}</td>)}<td className="n">{totals[i]}</td></tr>)}</tbody></table>
+        <div style={{ overflowX: 'auto' }}><table className="mini-tbl"><thead><tr><th>{t('colDay')}</th>{series.map((s) => <th className="n" key={s.product.id}>{pname(s.product)}</th>)}<th className="n">{t('total')}</th></tr></thead>
+          <tbody>{days.map((d, i) => <tr key={d}><td>{fday(d)}</td>{series.map((s) => <td className="n" key={s.product.id}>{s.values[i] || 0}</td>)}<td className="n">{totals[i]}</td></tr>)}</tbody></table></div>
       </details>
     </section>
   );
@@ -1948,14 +1989,17 @@ function StockPage({ params }) {
     const isOpen = !!open[m.product_id];
     const h = hist[m.product_id];
     return (<Fragment key={m.product_id}>
-      <div className="tr" style={cols} {...(canHistory ? { role: 'button', tabIndex: 0, 'aria-expanded': isOpen, 'data-row': m.product_id, onClick: () => toggle(m.product_id),
-        onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(m.product_id); } } } : {})}>
+      <div className="tr" style={cols} {...(canHistory ? {
+        role: 'button', tabIndex: 0, 'aria-expanded': isOpen, 'data-row': m.product_id, onClick: () => toggle(m.product_id),
+        onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(m.product_id); } }
+      } : {})}>
         <div className="name"><b>{pname(m)}</b><span>{m.code}</span></div>
-        <Meter qty={m.qty} min={m.min_qty} target={m.target_qty} level={m.level} />
-        <div className="right" title={fx(m.qty, m.unit)}><div className="mono" style={{ fontWeight: 600, fontSize: 14 }}>{fq(m.qty, m.unit)}</div><LowTag level={m.level} /></div>
-        <div className="right mono small">{fq(m.min_qty, m.unit)}</div>
-        <div className="right mono small" style={{ fontWeight: 600, color: m.days_left != null && m.days_left <= 3 ? 'var(--low)' : 'var(--ink)' }}>{m.days_left != null ? t('days', { n: m.days_left }) : '—'}</div>
-        {canHistory && <span className="muted"><Icon name={isOpen ? 'chevU' : 'chevD'} size={18} /></span>}
+        <div className="m-full"><Meter qty={m.qty} min={m.min_qty} target={m.target_qty} level={m.level} /></div>
+        <div className="right" title={fx(m.qty, m.unit)}><div className="mono" style={{ fontWeight: 600, fontSize: 14 }}>{fq(m.qty, m.unit)}</div><LowTag level={m.level} />
+          <span className="m-only xs muted">{t('min')} {fq(m.min_qty, m.unit)}{m.days_left != null ? ' · ' + t('days', { n: m.days_left }) : ''}</span></div>
+        <div className="right mono small m-hide">{fq(m.min_qty, m.unit)}</div>
+        <div className="right mono small m-hide" style={{ fontWeight: 600, color: m.days_left != null && m.days_left <= 3 ? 'var(--low)' : 'var(--ink)' }}>{m.days_left != null ? t('days', { n: m.days_left }) : '—'}</div>
+        {canHistory && <span className="muted m-hide"><Icon name={isOpen ? 'chevU' : 'chevD'} size={18} /></span>}
       </div>
       {isOpen && (
         <div style={{ margin: '0 0 14px', padding: '14px 16px', borderRadius: 14, background: 'var(--bg)' }}>
@@ -1964,12 +2008,12 @@ function StockPage({ params }) {
           {!h ? <Loading /> : !h.length ? <p className="muted small">{t('noHistory')}</p> : h.map((r) => {
             const struck = !!r.document.reversed_by;
             return (
-              <div key={r.id} style={{ display: 'grid', gridTemplateColumns: '130px 90px minmax(0,1fr) 100px 100px', gap: 12, alignItems: 'center', padding: '8px 0', borderTop: '1px solid var(--line)', fontSize: 13, color: struck ? 'var(--muted)' : undefined }}>
-                <span className="mono xs">{fdt(r.created_at)}</span>
-                <a className="mono" style={{ fontWeight: 600, textDecoration: struck ? 'line-through' : undefined }} href={`#/ledger?open=${r.document.id}`}>{r.document.number}</a>
-                <span>{t('t_' + r.document.doc_type)}{struck ? ' · ' + t('stReversed').toLowerCase() : ''}</span>
-                <span className={'mono right ' + (struck ? '' : r.qty_delta < 0 ? 'neg' : 'pos')} style={{ fontWeight: 600, textDecoration: struck ? 'line-through' : undefined }} title={fx(r.qty_delta, m.unit, true)}>{fq(r.qty_delta, m.unit, true)}</span>
-                <span className="mono right" title={fx(r.qty_after, m.unit)}>{fq(r.qty_after, m.unit)}</span>
+              <div key={r.id} className="hist-row" style={{ display: 'grid', gridTemplateColumns: '130px 90px minmax(0,1fr) 100px 100px', gap: 12, alignItems: 'center', padding: '8px 0', borderTop: '1px solid var(--line)', fontSize: 13, color: struck ? 'var(--muted)' : undefined }}>
+                <span className="mono xs m-o3 m-sub">{fdt(r.created_at)}</span>
+                <a className="mono m-o1" style={{ fontWeight: 600, textDecoration: struck ? 'line-through' : undefined }} href={`#/ledger?open=${r.document.id}`}>{r.document.number}</a>
+                <span className="m-hide">{t('t_' + r.document.doc_type)}{struck ? ' · ' + t('stReversed').toLowerCase() : ''}</span>
+                <span className={'mono right m-o2 ' + (struck ? '' : r.qty_delta < 0 ? 'neg' : 'pos')} style={{ fontWeight: 600, textDecoration: struck ? 'line-through' : undefined }} title={fx(r.qty_delta, m.unit, true)}>{fq(r.qty_delta, m.unit, true)}</span>
+                <span className="mono right m-o4 m-sub" title={fx(r.qty_after, m.unit)}>{fq(r.qty_after, m.unit)}</span>
               </div>
             );
           })}
@@ -2056,9 +2100,12 @@ function ReceiptForm({ raws, params, onSaved }) {
     if (!isRetry || !reqId.current) reqId.current = uuid();
     setSending(true); setMsg(null);
     try {
-      const doc = await api('POST', '/documents/receipts', { body: {
-        request_id: reqId.current, lines: all.map((x) => ({ product_id: x.p.product_id, qty: x.q })),
-        supplier_name: head.sup.trim() || null, supplier_doc_no: head.no.trim() || null, supplier_doc_date: head.date || null, note: head.note.trim() || null } });
+      const doc = await api('POST', '/documents/receipts', {
+        body: {
+          request_id: reqId.current, lines: all.map((x) => ({ product_id: x.p.product_id, qty: x.q })),
+          supplier_name: head.sup.trim() || null, supplier_doc_no: head.no.trim() || null, supplier_doc_date: head.date || null, note: head.note.trim() || null
+        }
+      });
       toast(<>{t('rcDone', { num: doc.number })} · <a href={`#/print/${doc.id}`}>{t('print')}</a> · <a href={`#/ledger?open=${doc.id}`}>{t('openDoc')}</a></>);
       refreshLow(); onSaved();
     } catch (err) {
@@ -2094,14 +2141,16 @@ function ReceiptForm({ raws, params, onSaved }) {
             const { p, q, err } = info(l); const after = p && q ? p.qty + q : null;
             return (
               <div className="tr" style={cols} key={l.key} data-key={l.key}>
-                <span className="mono muted" style={{ paddingTop: 14 }}>{i + 1}</span>
-                <select className="input" aria-label={`${t('raw')} ${i + 1}`} value={l.pid} aria-invalid={!!err && (!l.pid || err === t('dupLine'))}
-                  onChange={(e) => { const pid = e.target.value ? Number(e.target.value) : ''; const pp = byId[pid];
-                    setLine(l.key, { pid, q: { ...l.q, mode: pp && pp.unit === 'pcs' ? 'pcs' : l.q.mode === 'pcs' ? 'kg' : l.q.mode } }); }}>
+                <span className="mono muted m-hide" style={{ paddingTop: 14 }}>{i + 1}</span>
+                <select className="input m-full" aria-label={`${t('raw')} ${i + 1}`} value={l.pid} aria-invalid={!!err && (!l.pid || err === t('dupLine'))}
+                  onChange={(e) => {
+                    const pid = e.target.value ? Number(e.target.value) : ''; const pp = byId[pid];
+                    setLine(l.key, { pid, q: { ...l.q, mode: pp && pp.unit === 'pcs' ? 'pcs' : l.q.mode === 'pcs' ? 'kg' : l.q.mode } });
+                  }}>
                   <option value="">{t('choose')}</option>
                   {raws.map((r) => <option key={r.product_id} value={r.product_id}>{pname(r)} · {r.code}</option>)}
                 </select>
-                <div className="field" style={{ gap: 4 }}>
+                <div className="field m-full" style={{ gap: 4 }}>
                   <QtyInput value={l.q} unit={p ? p.unit : 'g'} invalid={err === t('badQty')} ariaLabel={`${t('qty')} ${i + 1}`} onChange={(v) => setLine(l.key, { q: v })} />
                   {err ? <p className="err"><Icon name="warn" size={14} />{err}</p> : q && p && p.unit === 'g' && l.q.mode === 'kg' ? <span className="help mono">{fx(q, 'g')}</span> : null}
                 </div>
@@ -2342,8 +2391,10 @@ function ScrapForm({ initialStock, params }) {
         <fieldset><legend>{t(kind)}</legend>
           <div id="scItems" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 10, marginTop: 10 }}>
             {items.length ? items.map((i) => (
-              <label key={i.product_id} style={{ display: 'flex', gap: 12, alignItems: 'center', minHeight: 60, padding: '10px 14px', borderRadius: 14, cursor: 'pointer',
-                ...(i.product_id === pid ? { border: '2px solid var(--cocoa)', background: '#FBF5EE' } : { border: '1px solid var(--line)', background: 'var(--card)' }) }}>
+              <label key={i.product_id} style={{
+                display: 'flex', gap: 12, alignItems: 'center', minHeight: 60, padding: '10px 14px', borderRadius: 14, cursor: 'pointer',
+                ...(i.product_id === pid ? { border: '2px solid var(--cocoa)', background: '#FBF5EE' } : { border: '1px solid var(--line)', background: 'var(--card)' })
+              }}>
                 <input type="radio" name="scItem" className="cb" value={i.product_id} checked={i.product_id === pid} disabled={i.qty <= 0}
                   onChange={() => { setPid(i.product_id); setQ((v) => ({ ...v, mode: i.unit === 'pcs' ? 'pcs' : v.mode === 'pcs' ? 'kg' : v.mode })); changed(); }} />
                 <span><b style={{ display: 'block', fontSize: 14 }}>{pname(i)}</b><span className="xs muted">{t('inStock', { q: fq(i.qty, i.unit) })}</span></span>
@@ -2411,8 +2462,10 @@ function LedgerPage({ params }) {
 
   // keep filters (and the open document) in the address
   useEffect(() => {
-    setHashQuery({ view: f.view === 'lines' ? 'lines' : '', q: f.q, doc_type: f.doc_type, product_id: f.product_id, created_by_id: f.created_by_id,
-      date_from: f.date_from, date_to: f.date_to, page: f.page > 1 ? f.page : '', open: openId || '' });
+    setHashQuery({
+      view: f.view === 'lines' ? 'lines' : '', q: f.q, doc_type: f.doc_type, product_id: f.product_id, created_by_id: f.created_by_id,
+      date_from: f.date_from, date_to: f.date_to, page: f.page > 1 ? f.page : '', open: openId || ''
+    });
   }, [f, openId]);
 
   // search box: wait a little before asking the server
@@ -2429,11 +2482,11 @@ function LedgerPage({ params }) {
       if (f.view === 'docs') {
         rows.push(['number', 'type', 'created_at', 'user', 'product_code', 'product', 'qty_delta', 'unit', 'qty_after', 'reason', 'note', 'reversed_by', 'reverses']);
         (await apiAll('/documents', q)).forEach((d) => d.entries.forEach((e) => rows.push([d.number, d.doc_type, fdts(d.created_at), d.created_by.full_name, e.product.code, pname(e.product),
-          e.qty_delta, e.product.unit, e.qty_after, d.reason || '', d.note || '', d.reversed_by ? d.reversed_by.number : '', d.reverses ? d.reverses.number : ''])));
+        e.qty_delta, e.product.unit, e.qty_after, d.reason || '', d.note || '', d.reversed_by ? d.reversed_by.number : '', d.reverses ? d.reverses.number : ''])));
       } else {
         rows.push(['created_at', 'number', 'type', 'product_code', 'product', 'qty_delta', 'unit', 'qty_after', 'user', 'reversed_by']);
         (await apiAll('/ledger', q)).forEach((r) => rows.push([fdts(r.created_at), r.document.number, r.document.doc_type, r.product.code, pname(r.product), r.qty_delta,
-          r.product.unit, r.qty_after, r.document.created_by.full_name, r.document.reversed_by ? r.document.reversed_by.number : '']));
+        r.product.unit, r.qty_after, r.document.created_by.full_name, r.document.reversed_by ? r.document.reversed_by.number : '']));
       }
       const csv = '﻿' + rows.map((r) => r.map((c) => { const s = String(c == null ? '' : c); return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\r\n');
       const a = document.createElement('a');
@@ -2464,15 +2517,15 @@ function LedgerPage({ params }) {
             return (
               <Fragment key={doc.id}>
                 <div className="tr" style={docCols}>
-                  <button className="icon-btn ghost" aria-expanded={exp} aria-label={t(exp ? 'collapse' : 'expand', { num: doc.number })} onClick={() => setExpanded((x) => ({ ...x, [doc.id]: !exp }))}><Icon name={exp ? 'chevU' : 'chevD'} size={18} /></button>
-                  <button className="link-btn mono" style={strikeNum(struck)} data-open={doc.id} onClick={() => setOpenId(doc.id)}>{doc.number}</button>
-                  <span><DocBadge type={doc.doc_type} /></span>
-                  <span style={{ minWidth: 0 }}><span className={'small' + (struck ? ' strike' : '')} style={{ display: 'block' }}>{docSummary(doc)}</span>
+                  <button className="icon-btn ghost m-hide" aria-expanded={exp} aria-label={t(exp ? 'collapse' : 'expand', { num: doc.number })} onClick={() => setExpanded((x) => ({ ...x, [doc.id]: !exp }))}><Icon name={exp ? 'chevU' : 'chevD'} size={18} /></button>
+                  <button className="link-btn mono" style={{ ...strikeNum(struck), justifySelf: 'start' }} data-open={doc.id} onClick={() => setOpenId(doc.id)}>{doc.number}</button>
+                  <span className="m-right"><DocBadge type={doc.doc_type} /></span>
+                  <span className="m-full" style={{ minWidth: 0 }}><span className={'small' + (struck ? ' strike' : '')} style={{ display: 'block' }}>{docSummary(doc)}</span>
                     {doc.reversed_by && <button className="link-btn xs" onClick={() => setOpenId(doc.reversed_by.id)}>{t('reversedBy', { num: doc.reversed_by.number })}</button>}
                     {doc.reverses && <button className="link-btn xs" onClick={() => setOpenId(doc.reverses.id)}>{t('reverses', { num: doc.reverses.number })}</button>}</span>
-                  <span className="small">{shortName(doc.created_by.full_name)}</span><span className="small mono">{fdt(doc.created_at)}</span>
+                  <span className="small m-sub">{shortName(doc.created_by.full_name)}</span><span className="small mono m-sub m-right">{fdt(doc.created_at)}</span>
                 </div>
-                {exp && <div style={{ margin: '0 0 10px 60px' }} className="moves">{doc.entries.map((e) => (
+                {exp && <div style={{ margin: '0 0 10px 60px' }} className="moves exp-moves">{doc.entries.map((e) => (
                   <div className="mv" key={e.product.id}><span>{pname(e.product)}</span>
                     <span><b className={struck ? 'strike' : e.qty_delta < 0 ? 'neg' : 'pos'} title={fx(e.qty_delta, e.product.unit, true)}>{fq(e.qty_delta, e.product.unit, true)}</b> <span className="after">{t('after', { q: fq(e.qty_after, e.product.unit) })}</span></span></div>
                 ))}</div>}
@@ -2489,12 +2542,12 @@ function LedgerPage({ params }) {
           const struck = !!r.document.reversed_by;
           return (
             <div className="tr" style={lineCols} key={r.id}>
-              <span className="small mono">{fdt(r.created_at)}</span>
-              <button className="link-btn mono" style={strikeNum(struck)} data-open={r.document.id} onClick={() => setOpenId(r.document.id)}>{r.document.number}</button>
-              <span><DocBadge type={r.document.doc_type} /></span><span className="small">{pname(r.product)}</span>
-              <span className={'right mono small ' + (struck ? 'strike' : r.qty_delta < 0 ? 'neg' : 'pos')} style={{ fontWeight: 600 }} title={fx(r.qty_delta, r.product.unit, true)}>{fq(r.qty_delta, r.product.unit, true)}</span>
-              <span className="right mono small" title={fx(r.qty_after, r.product.unit)}>{fq(r.qty_after, r.product.unit)}</span>
-              <span className="small">{shortName(r.document.created_by.full_name)}</span>
+              <span className="small mono m-o5 m-sub">{fdt(r.created_at)}</span>
+              <button className="link-btn mono m-o3" style={{ ...strikeNum(struck), justifySelf: 'start' }} data-open={r.document.id} onClick={() => setOpenId(r.document.id)}>{r.document.number}</button>
+              <span className="m-hide"><DocBadge type={r.document.doc_type} /></span><span className="small m-o1" style={{ fontWeight: 600 }}>{pname(r.product)}</span>
+              <span className={'right mono small m-o2 ' + (struck ? 'strike' : r.qty_delta < 0 ? 'neg' : 'pos')} style={{ fontWeight: 600 }} title={fx(r.qty_delta, r.product.unit, true)}>{fq(r.qty_delta, r.product.unit, true)}</span>
+              <span className="right mono small m-o4 m-lbl" data-label={t('afterK')} title={fx(r.qty_after, r.product.unit)}>{fq(r.qty_after, r.product.unit)}</span>
+              <span className="small m-o6 m-sub m-right">{shortName(r.document.created_by.full_name)}</span>
             </div>
           );
         })}
@@ -2511,8 +2564,8 @@ function LedgerPage({ params }) {
       <button className="btn" id="csv" disabled={csvBusy} onClick={exportCsv}>{csvBusy ? <><Spinner dark />{t('csvBusy')}</> : <><Icon name="download" size={18} />{t('exportCsv')}</>}</button>
     </PageHead>
     <section className="card" aria-label={t('filters')} style={{ padding: '16px 20px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(150px,100%),1fr))', gap: '12px 14px', alignItems: 'end' }}>
-        {f.view === 'docs' && <div className="field"><label htmlFor="fq">{t('search')}</label><input className="input mono" id="fq" type="search" placeholder={t('fNumber')} value={qText} onChange={(e) => setQText(e.target.value)} /></div>}
+      <div className="filters-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(150px,100%),1fr))', gap: '12px 14px', alignItems: 'end' }}>
+        {f.view === 'docs' && <div className="field f-wide"><label htmlFor="fq">{t('search')}</label><input className="input mono" id="fq" type="search" placeholder={t('fNumber')} value={qText} onChange={(e) => setQText(e.target.value)} /></div>}
         <div className="field"><label htmlFor="ft">{t('fType')}</label><select className="input" id="ft" value={f.doc_type} onChange={(e) => upd({ doc_type: e.target.value })}>
           <option value="">{t('all')}</option>{DOC_TYPES.map((x) => <option key={x} value={x}>{t('t_' + x)}</option>)}</select></div>
         <div className="field"><label htmlFor="fp">{t('product')}</label><select className="input" id="fp" value={f.product_id} onChange={(e) => upd({ product_id: e.target.value })}>
@@ -2647,10 +2700,10 @@ function ProductsPage({ params }) {
   const rawN = d ? d.active.filter((x) => x.kind === 'raw').length : 0;
   const rowEl = (p) => (
     <div className="tr" style={cols} key={p.id}>
-      <span className="mono small" style={{ fontWeight: 600 }}>{p.code}</span><span>{p.name_uz}</span><span lang="ru">{p.name_ru}</span>
-      <span><span className={`badge b-${p.kind}`}>{t(p.kind)}</span></span><span className="small">{p.unit === 'pcs' ? t('pcs') : t('g')}</span>
-      <span className="mono small" title={fx(p.min_qty, p.unit)}>{fq(p.min_qty, p.unit)}</span><span className="mono small" title={fx(p.target_qty, p.unit)}>{fq(p.target_qty, p.unit)}</span>
-      {canEdit && <button className="icon-btn ghost" data-edit={p.id} aria-label={`${t('edit')}: ${p.code}`} onClick={() => setEditor({ product: p })}><Icon name="edit" size={18} /></button>}
+      <span className="mono small m-o3" style={{ fontWeight: 600 }}>{p.code}</span><span className="m-o1" style={{ fontWeight: 600 }}>{p.name_uz}</span><span lang="ru" className="m-o5 m-full m-sub">{p.name_ru}</span>
+      <span className="m-o4 m-right"><span className={`badge b-${p.kind}`}>{t(p.kind)}</span></span><span className="small m-hide">{p.unit === 'pcs' ? t('pcs') : t('g')}</span>
+      <span className="mono small m-o6 m-lbl" data-label={t('colMin')} title={fx(p.min_qty, p.unit)}>{fq(p.min_qty, p.unit)}</span><span className="mono small m-o7 m-lbl" data-label={t('colTarget')} title={fx(p.target_qty, p.unit)}>{fq(p.target_qty, p.unit)}</span>
+      {canEdit && <button className="icon-btn ghost m-o2 m-right" data-edit={p.id} aria-label={`${t('edit')}: ${p.code}`} onClick={() => setEditor({ product: p })}><Icon name="edit" size={18} /></button>}
     </div>
   );
   return (<>
@@ -2868,14 +2921,14 @@ function RecipesView({ initialSums, raws, params }) {
           const q = parseQty(l.qty, 'g');
           return (
             <div className="rl" key={i}>
-              <select className="input" aria-label={`${t('raw')} ${i + 1}`} value={l.raw} onChange={(e) => setLine(i, { raw: e.target.value ? Number(e.target.value) : '' })}>
+              <select className="input m-full m-o1" aria-label={`${t('raw')} ${i + 1}`} value={l.raw} onChange={(e) => setLine(i, { raw: e.target.value ? Number(e.target.value) : '' })}>
                 <option value="">{t('choose')}</option>
                 {raws.map((x) => <option key={x.product_id} value={x.product_id} disabled={used.has(x.product_id) && x.product_id !== l.raw}>{pname(x)}</option>)}
               </select>
-              <div className="unit-wrap"><input className="input mono" inputMode="numeric" value={l.qty} aria-label={`${t('norm')} ${i + 1}`} data-f="qty"
+              <div className="unit-wrap m-o2"><input className="input mono" inputMode="numeric" value={l.qty} aria-label={`${t('norm')} ${i + 1}`} data-f="qty"
                 aria-invalid={l.qty !== '' && (q == null || q <= 0)} onChange={(e) => setLine(i, { qty: e.target.value })} /><span className="unit-tag">{uLabel(unitOf(l.raw))}</span></div>
-              <span>{draftDiff(l)}</span>
-              <button type="button" className="icon-btn ghost" aria-label={t('removeLine', { n: i + 1 })} onClick={() => { setDraft((d) => ({ ...d, lines: d.lines.filter((_, j) => j !== i) })); setDirty(true); }}><Icon name="x" size={18} /></button>
+              <span className="m-o4 m-full">{draftDiff(l)}</span>
+              <button type="button" className="icon-btn ghost m-o3" aria-label={t('removeLine', { n: i + 1 })} onClick={() => { setDraft((d) => ({ ...d, lines: d.lines.filter((_, j) => j !== i) })); setDirty(true); }}><Icon name="x" size={18} /></button>
             </div>
           );
         })}
@@ -2890,8 +2943,10 @@ function RecipesView({ initialSums, raws, params }) {
           <button className="btn primary" id="drAct" disabled={!!busy} onClick={async () => {
             const v = draft.version;
             if (payload().bad) { setErr({ message: t('badQty') }); return; }
-            const ok = await confirm({ title: t('actTitle', { v }), text: t('actText', { v }), okText: t('activateV', { v }),
-              extra: <div className="row small"><span className="badge b-ok">v{v}</span>{t('actNew', { v })}{active && <> · <span className="badge b-off">v{active.version}</span>{t('actOld', { v: active.version })}</>}</div> });
+            const ok = await confirm({
+              title: t('actTitle', { v }), text: t('actText', { v }), okText: t('activateV', { v }),
+              extra: <div className="row small"><span className="badge b-ok">v{v}</span>{t('actNew', { v })}{active && <> · <span className="badge b-off">v{active.version}</span>{t('actOld', { v: active.version })}</>}</div>
+            });
             if (!ok) return;
             run('act', async () => {
               if (dirty) await saveDraft();
@@ -2950,7 +3005,7 @@ function UsersPage() {
   const st = useLoad(() => api('GET', '/users', { query: { size: 100 } }).then((r) => r.items));
   const [panel, setPanel] = useState(null); // {kind:'new'|'edit'|'reset', user}
   const [err, setErr] = useState(null);
-  const cols = { gridTemplateColumns: 'minmax(180px,1.4fr) 130px 170px 170px 140px minmax(250px,auto)' };
+  const cols = { gridTemplateColumns: 'minmax(160px,1.3fr) minmax(90px,.7fr) minmax(120px,1fr) minmax(110px,1fr) 130px max-content' };
   const isLocked = (u) => u.locked_until && new Date(u.locked_until) > new Date();
   const done = (text) => { toast(text); setPanel(null); st.reload(true); };
   async function toggleActive(u) {
@@ -2975,11 +3030,11 @@ function UsersPage() {
               : u.must_change_password ? <span className="badge b-warn">{t('usMustChange')}</span> : <span className="badge b-ok">{t('usActive')}</span>;
             return (
               <div className="tr" style={{ ...cols, color: u.is_active ? undefined : 'var(--muted)' }} key={u.id}>
-                <span className="row" style={{ flexWrap: 'nowrap' }}><span className="ava" aria-hidden="true" style={{ background: u.is_active ? '#6B4A3A' : '#CDBBAA' }}>{initials(u.full_name)}</span>
+                <span className="row m-o1" style={{ flexWrap: 'nowrap' }}><span className="ava" aria-hidden="true" style={{ background: u.is_active ? '#6B4A3A' : '#CDBBAA' }}>{initials(u.full_name)}</span>
                   <strong>{u.full_name}{self && <span className="xs muted"> ({t('you')})</span>}</strong></span>
-                <span className="mono small">{u.login}</span><span className="small">{t('role_' + u.role)}</span><span>{status}</span>
-                <span className="small mono">{u.last_login_at ? fdt(u.last_login_at) : <span className="muted" style={{ fontFamily: 'var(--f-body)' }}>{t('neverLogged')}</span>}</span>
-                <span className="row" style={{ gap: 6, justifyContent: 'flex-end' }}>
+                <span className="mono small m-o3">{u.login}</span><span className="small m-o4 m-right">{t('role_' + u.role)}</span><span className="m-o2 m-right">{status}</span>
+                <span className="small mono m-o5 m-full m-sub m-lbl" data-label={t('colLast')}>{u.last_login_at ? fdt(u.last_login_at) : <span className="muted" style={{ fontFamily: 'var(--f-body)' }}>{t('neverLogged')}</span>}</span>
+                <span className="row m-o6 m-full" style={{ gap: 6, justifyContent: 'flex-end' }}>
                   <button className="btn sm" onClick={() => setPanel({ kind: 'edit', user: u })}>{t('edit')}</button>
                   <button className="btn sm" onClick={() => setPanel({ kind: 'reset', user: u })}>{t('resetPw')}</button>
                   {!self && <button className={'btn sm' + (u.is_active ? '' : ' primary')} onClick={() => toggleActive(u)}>{u.is_active ? t('block') : t('unblock')}</button>}
